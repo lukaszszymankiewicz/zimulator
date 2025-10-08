@@ -2,74 +2,74 @@ const std = @import("std");
 const mc = @import("mc.zig");
 
 // HARDWARE
-const RAM_SIZE: u32 = 256 * 256;
-const RAM_BEG: u32 = 128;
-const SREG_SIZE: u32 = 128;
+pub const RAM_SIZE: u32 = 256 * 256;
+pub const RAM_BEG: u32 = 128;
+pub const SREG_SIZE: u32 = 128;
 
 // REGISTER INDEXES
-const DUMMY: u32 = 0b0000_0000;
-const A: u32 = 0b0000_0001;
-const B: u32 = 0b0000_0010;
-const C: u32 = 0b0000_0011;
-const D: u32 = 0b0000_0100;
-const E: u32 = 0b0000_0101;
-const H: u32 = 0b0000_0110;
-const L: u32 = 0b0000_0111;
-const CF: u32 = 0b0000_1000;
-const HF: u32 = 0b0000_1001;
-const NF: u32 = 0b0000_1010;
-const ZF: u32 = 0b0000_1011;
-const BC: u32 = 0b0001_0000;
-const DE: u32 = 0b0010_0000;
-const HL: u32 = 0b0011_0000;
-const SP: u32 = 0b0100_0000;
+pub const DUMMY: u32 = 0b0000_0000;
+pub const A: u32 = 0b0000_0001;
+pub const B: u32 = 0b0000_0010;
+pub const C: u32 = 0b0000_0011;
+pub const D: u32 = 0b0000_0100;
+pub const E: u32 = 0b0000_0101;
+pub const H: u32 = 0b0000_0110;
+pub const L: u32 = 0b0000_0111;
+pub const CF: u32 = 0b0000_1000;
+pub const HF: u32 = 0b0000_1001;
+pub const NF: u32 = 0b0000_1010;
+pub const ZF: u32 = 0b0000_1011;
+pub const BC: u32 = 0b0001_0000;
+pub const DE: u32 = 0b0010_0000;
+pub const HL: u32 = 0b0011_0000;
+pub const SP: u32 = 0b0100_0000;
 
 // INSTRUCTIONS
-const NOP: u32 = 0b0000_0000;
-const LD_BC_D16: u32 = 0b0000_0001;
+pub const NOP: u32 = 0b0000_0000;
+pub const LD_BC_D16: u32 = 0b0000_0001;
 // ... TODO
-const ADD_A_B: u32 = 0b1000_0000;
-const ADD_A_C: u32 = 0b1000_0001;
-const ADD_A_D: u32 = 0b1000_0010;
-const ADD_A_E: u32 = 0b1000_0011;
-const ADD_A_H: u32 = 0b1000_0100;
-const ADD_A_L: u32 = 0b1000_0101;
-const ADD_A_HL: u32 = 0b1000_0110;
-const ADD_A_A: u32 = 0b1000_0111;
+pub const ADD_A_B: u32 = 0b1000_0000;
+pub const ADD_A_C: u32 = 0b1000_0001;
+pub const ADD_A_D: u32 = 0b1000_0010;
+pub const ADD_A_E: u32 = 0b1000_0011;
+pub const ADD_A_H: u32 = 0b1000_0100;
+pub const ADD_A_L: u32 = 0b1000_0101;
+pub const ADD_A_HL: u32 = 0b1000_0110;
+pub const ADD_A_A: u32 = 0b1000_0111;
 
-const ADC_A_B: u32 = 0b1000_1000;
-const ADC_A_C: u32 = 0b1000_1001;
-const ADC_A_D: u32 = 0b1000_1010;
-const ADC_A_E: u32 = 0b1000_1011;
-const ADC_A_H: u32 = 0b1000_1100;
-const ADC_A_L: u32 = 0b1000_1101;
-const ADC_A_HL: u32 = 0b1000_1110;
-const ADC_A_A: u32 = 0b1000_1111;
+pub const ADC_A_B: u32 = 0b1000_1000;
+pub const ADC_A_C: u32 = 0b1000_1001;
+pub const ADC_A_D: u32 = 0b1000_1010;
+pub const ADC_A_E: u32 = 0b1000_1011;
+pub const ADC_A_H: u32 = 0b1000_1100;
+pub const ADC_A_L: u32 = 0b1000_1101;
+pub const ADC_A_HL: u32 = 0b1000_1110;
+pub const ADC_A_A: u32 = 0b1000_1111;
 
-const SUB_B: u32 = 0b1001_0000;
-const SUB_C: u32 = 0b1001_0001;
-const SUB_D: u32 = 0b1001_0010;
-const SUB_E: u32 = 0b1001_0011;
-const SUB_H: u32 = 0b1001_0100;
-const SUB_L: u32 = 0b1001_0101;
-const SUB_HL: u32 = 0b1001_0110;
-const SUB_A: u32 = 0b1001_0111;
+pub const SUB_B: u32 = 0b1001_0000;
+pub const SUB_C: u32 = 0b1001_0001;
+pub const SUB_D: u32 = 0b1001_0010;
+pub const SUB_E: u32 = 0b1001_0011;
+pub const SUB_H: u32 = 0b1001_0100;
+pub const SUB_L: u32 = 0b1001_0101;
+pub const SUB_HL: u32 = 0b1001_0110;
+pub const SUB_A: u32 = 0b1001_0111;
 
 // GBA INSTRUCTION TABLE
-const OP_CODE = 0;
-const OP_SIZE = 1;
-const OP_MC = 2;
-const OP_VAL_A = 3;
-const OP_VAL_B = 4;
-const OP_FMC_C = 5;
-const OP_FMC_H = 6;
-const OP_FMC_N = 7;
-const OP_FMC_Z = 8;
+pub const OP_CODE = 0;
+pub const OP_SIZE = 1;
+pub const OP_MC = 2;
+pub const OP_VAL_A = 3;
+pub const OP_VAL_B = 4;
+pub const OP_FMC_C = 5;
+pub const OP_FMC_H = 6;
+pub const OP_FMC_N = 7;
+pub const OP_FMC_Z = 8;
 
 const NA = 0;
 const MEM_TYPE = SREG_SIZE;
 
-const instructions = [_][9]u32{
+pub const instructions = [_][9]u32{
     [_]u32{ NOP, 1, mc._NOP, NA, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 1, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 2, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -227,7 +227,7 @@ const instructions = [_][9]u32{
     [_]u32{ SUB_A, 1, mc._SUB_A_REG, A, A, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
 };
 
-const CPU = struct {
+pub const CPU = struct {
     REG: [SREG_SIZE + RAM_SIZE]u16,
 
     pub fn init() CPU {
@@ -266,7 +266,7 @@ const CPU = struct {
         self.set_reg_val(HL, self.REG[H] << 8 | self.REG[L]);
     }
 
-    fn run_ins(self: *CPU, program: [3]u32) void {
+    pub fn run_ins(self: *CPU, program: [3]u32) void {
         const i = program[0];
         // const lb = program[1];
         // const hb = program[2];
@@ -285,196 +285,3 @@ const CPU = struct {
         mc.MC.calc(instructions[i][OP_MC], instructions[i][OP_FMC_C], instructions[i][OP_FMC_H], instructions[i][OP_FMC_N], instructions[i][OP_FMC_Z], a, b, flags, memory);
     }
 };
-
-//////////////////
-test "Check if `clean_reg` works" {
-    var cpu = CPU.init();
-
-    cpu.clean_reg();
-
-    try std.testing.expect(cpu.get_reg_val(A) == 0);
-    try std.testing.expect(cpu.get_reg_val(B) == 0);
-    try std.testing.expect(cpu.get_reg_val(C) == 0);
-    try std.testing.expect(cpu.get_reg_val(D) == 0);
-    try std.testing.expect(cpu.get_reg_val(E) == 0);
-    try std.testing.expect(cpu.get_reg_val(H) == 0);
-    try std.testing.expect(cpu.get_reg_val(L) == 0);
-    try std.testing.expect(cpu.get_reg_val(BC) == 0);
-    try std.testing.expect(cpu.get_reg_val(DE) == 0);
-    try std.testing.expect(cpu.get_reg_val(HL) == 0);
-}
-
-test "XXX_A_REG family" {
-    // PREP
-    const INS: u32 = 0;
-    const EXP_REG: u32 = 12;
-    const EXP_VAL: u32 = 13;
-    const EXP_C: u32 = 14;
-    const EXP_H: u32 = 15;
-    const EXP_N: u32 = 16;
-    const EXP_Z: u32 = 17;
-
-    const test_cases = [_][18]u32{
-        // NOP
-        //      INS  A            B            C  D  E, H, L, C, H, N, Z, E_REG, E_V,     C, H  N  Z
-        [_]u32{ NOP, 0b1111_1111, 0b0000_0001, 0, 0, 0, 0, 0, 1, 1, 1, 1, A, 0b1111_1111, 1, 1, 1, 1 },
-        [_]u32{ NOP, 0b1111_1111, 0b0000_0001, 0, 0, 0, 0, 0, 1, 0, 1, 0, B, 0b0000_0001, 1, 0, 1, 0 },
-        [_]u32{ NOP, 0b0111_1110, 0b0000_0001, 0, 0, 0, 0, 0, 0, 1, 0, 1, A, 0b0111_1110, 0, 1, 0, 1 },
-        // ADD
-        [_]u32{ ADD_A_B, 0b1111_1111, 0b0000_0001, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 1, 1, 0, 1 },
-        [_]u32{ ADD_A_B, 0b1111_1111, 0b0000_1001, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_1000, 1, 1, 0, 0 },
-        [_]u32{ ADD_A_C, 0b0000_0000, 0, 0b0000_0000, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 0, 1 },
-        [_]u32{ ADD_A_D, 0b0000_0001, 0, 0, 0b0000_0010, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0011, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_E, 0b0000_1001, 0, 0, 0, 0b0000_0010, 0, 0, 0, 0, 0, 0, A, 0b0000_1011, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_H, 0b0000_0001, 0, 0, 0, 0, 0b0000_1111, 0, 0, 0, 0, 0, A, 0b0001_0000, 0, 1, 0, 0 },
-        [_]u32{ ADD_A_L, 0b0000_0001, 0, 0, 0, 0, 0, 0b0000_1111, 0, 0, 0, 0, A, 0b0001_0000, 0, 1, 0, 0 },
-        [_]u32{ ADD_A_B, 0b0100_0001, 0b0010_1111, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0111_0000, 0, 1, 0, 0 },
-        [_]u32{ ADD_A_C, 0b1111_0001, 0, 0b0001_1111, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0001_0000, 1, 1, 0, 0 },
-        [_]u32{ ADD_A_D, 0b1111_1111, 0, 0, 0b1111_1111, 0, 0, 0, 0, 0, 0, 0, A, 0b1111_1110, 1, 1, 0, 0 },
-        [_]u32{ ADD_A_A, 0b0000_0001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0010, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_A, 0b0000_0011, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0110, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_A, 0b0001_0101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0010_1010, 0, 0, 0, 0 },
-        // SUB
-        [_]u32{ SUB_B, 0b0001_0101, 0b0000_0001, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0001_0100, 0, 0, 1, 0 },
-        [_]u32{ SUB_B, 0b0000_0111, 0b0000_1111, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b1111_1000, 1, 1, 1, 0 },
-        [_]u32{ SUB_B, 0b0000_0000, 0b0000_0000, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_C, 0b0001_0101, 0, 0b0001_0101, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_D, 0b0111_1111, 0, 0, 0b0101_0101, 0, 0, 0, 0, 0, 0, 0, A, 0b0010_1010, 0, 0, 1, 0 },
-        [_]u32{ SUB_E, 0b0111_1111, 0, 0, 0, 0b0101_0101, 0, 0, 0, 0, 0, 0, A, 0b0010_1010, 0, 0, 1, 0 },
-        [_]u32{ SUB_H, 0b0111_1111, 0, 0, 0, 0, 0b0101_0101, 0, 0, 0, 0, 0, A, 0b0010_1010, 0, 0, 1, 0 },
-        [_]u32{ SUB_L, 0b0000_0000, 0, 0, 0, 0, 0, 0b0000_0001, 0, 0, 0, 0, A, 0b1111_1111, 1, 1, 1, 0 },
-        [_]u32{ SUB_A, 0b0000_0000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_A, 0b0000_0001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_A, 0b0000_1111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_A, 0b1000_1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        [_]u32{ SUB_A, 0b1111_1111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 1, 1 },
-        // ADC
-        [_]u32{ ADC_A_B, 0b1111_1111, 0b0000_0001, 0, 0, 0, 0, 0, 1, 0, 0, 0, A, 0b0000_0001, 1, 1, 0, 0 },
-        [_]u32{ ADC_A_C, 0b0000_0000, 0, 0b0000_0000, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0000, 0, 0, 0, 1 },
-        [_]u32{ ADC_A_D, 0b0000_0001, 0, 0, 0b0000_0010, 0, 0, 0, 1, 0, 0, 0, A, 0b0000_0100, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_E, 0b0000_1001, 0, 0, 0, 0b0000_0010, 0, 0, 0, 0, 0, 0, A, 0b0000_1011, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_H, 0b0000_0001, 0, 0, 0, 0, 0b0000_1111, 0, 1, 0, 0, 0, A, 0b0001_0001, 0, 1, 0, 0 },
-        [_]u32{ ADC_A_L, 0b0000_0001, 0, 0, 0, 0, 0, 0b0000_1111, 0, 0, 0, 0, A, 0b0001_0000, 0, 1, 0, 0 },
-        [_]u32{ ADC_A_B, 0b0100_0001, 0b0010_1111, 0, 0, 0, 0, 0, 1, 0, 0, 0, A, 0b0111_0001, 0, 1, 0, 0 },
-        [_]u32{ ADC_A_C, 0b1111_0001, 0, 0b0001_1111, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0001_0000, 1, 1, 0, 0 },
-        [_]u32{ ADC_A_D, 0b1111_1111, 0, 0, 0b1111_1111, 0, 0, 0, 1, 0, 0, 0, A, 0b1111_1111, 1, 1, 0, 0 },
-        [_]u32{ ADC_A_A, 0b0000_0001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0000_0010, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_A, 0b0000_0011, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, A, 0b0000_0111, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_A, 0b0001_0101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, A, 0b0010_1010, 0, 0, 0, 0 },
-    };
-
-    std.debug.print("\nXXX_A_REG family test \n", .{});
-
-    // run test cases
-    for (test_cases, 0..) |case, idx| {
-        // PREP
-        var cpu = CPU.init();
-
-        cpu.clean_reg();
-
-        // GIVEN
-        for (1..12) |i| {
-            const val: u16 = @intCast(case[i]);
-            cpu.set_reg_val(@intCast(i), val);
-        }
-
-        // WHEN
-        const ins_idx = case[INS];
-        std.debug.print("case: {d}, op 0x{X} ", .{ idx, case[OP_CODE] });
-        cpu.run_ins(.{ ins_idx, 0, 0 });
-
-        // THEN
-        try std.testing.expect(cpu.get_reg_val(case[EXP_REG]) == case[EXP_VAL]);
-        try std.testing.expect(cpu.get_reg_val(CF) == case[EXP_C]);
-        try std.testing.expect(cpu.get_reg_val(HF) == case[EXP_H]);
-        try std.testing.expect(cpu.get_reg_val(NF) == case[EXP_N]);
-        try std.testing.expect(cpu.get_reg_val(ZF) == case[EXP_Z]);
-
-        std.debug.print("PASSED\n", .{});
-    }
-}
-
-test "XXX_A_HL family" {
-    // PREP
-    const INS: u32 = 0;
-    const MEM_AD: u32 = 12;
-    const MEM_VAL: u32 = 13;
-    const EXP_REG: u32 = 14;
-    const EXP_VAL: u32 = 15;
-    const EXP_C: u32 = 16;
-    const EXP_H: u32 = 17;
-    const EXP_N: u32 = 18;
-    const EXP_Z: u32 = 19;
-
-    const test_cases = [_][20]u32{
-        // ADD
-        //      INS       A  B  C  D  E, H, L, C, H, N, Z, MEM, VAL,E, V,   C, H  N  Z
-        [_]u32{ ADD_A_HL, 1, 0, 0, 0, 0, 1, 9, 0, 1, 0, 0, 265, 99, A, 100, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 255, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 512, 1, A, 0, 1, 0, 0, 1 },
-        [_]u32{ ADD_A_HL, 15, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 256, 1, A, 16, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 768, 0, A, 0, 0, 0, 0, 1 },
-        [_]u32{ ADD_A_HL, 50, 0, 0, 0, 0, 1, 100, 0, 0, 0, 0, 356, 25, A, 75, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 100, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1024, 255, A, 99, 1, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 255, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 1280, 255, A, 254, 1, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 240, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 1536, 16, A, 0, 1, 0, 0, 1 },
-        [_]u32{ ADD_A_HL, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1792, 8, A, 16, 0, 0, 0, 0 },
-        [_]u32{ ADD_A_HL, 10, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 2048, 5, A, 15, 0, 0, 0, 0 },
-        // ADC
-        [_]u32{ ADC_A_HL, 1, 0, 0, 0, 0, 1, 9, 1, 1, 0, 0, 265, 99, A, 101, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 255, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 512, 1, A, 1, 1, 1, 0, 0 },
-        [_]u32{ ADC_A_HL, 15, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 256, 1, A, 17, 0, 1, 0, 0 },
-        [_]u32{ ADC_A_HL, 0, 0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 768, 0, A, 1, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 50, 0, 0, 0, 0, 1, 100, 1, 0, 0, 0, 356, 25, A, 76, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 100, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1024, 255, A, 99, 1, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 255, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 1280, 255, A, 254, 1, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 240, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 1536, 16, A, 0, 1, 0, 0, 1 },
-        [_]u32{ ADC_A_HL, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1792, 8, A, 16, 0, 0, 0, 0 },
-        [_]u32{ ADC_A_HL, 10, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 2048, 5, A, 15, 0, 0, 0, 0 },
-        // SUB
-        [_]u32{ SUB_HL, 21, 0, 0, 0, 0, 1, 9, 0, 0, 0, 0, 265, 1, A, 20, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 21, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 512, 21, A, 0, 0, 0, 1, 1 },
-        [_]u32{ SUB_HL, 127, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 768, 85, A, 42, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 127, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 256, 85, A, 42, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 127, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1024, 85, A, 42, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 1280, 1, A, 255, 1, 0, 1, 0 },
-        [_]u32{ SUB_HL, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 1536, 0, A, 0, 0, 0, 1, 1 },
-        [_]u32{ SUB_HL, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1792, 0, A, 1, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 15, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 2048, 0, A, 15, 0, 0, 1, 0 },
-        [_]u32{ SUB_HL, 136, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 2304, 136, A, 0, 0, 0, 1, 1 },
-        [_]u32{ SUB_HL, 255, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 2560, 255, A, 0, 0, 0, 1, 1 },
-    };
-
-    std.debug.print("\nXXX_A_HL family test \n", .{});
-
-    // run test cases
-    for (test_cases, 0..) |case, idx| {
-        // PREP
-        var cpu = CPU.init();
-
-        cpu.clean_reg();
-
-        // GIVEN
-        for (1..12) |i| {
-            const val: u16 = @intCast(case[i]);
-            cpu.set_reg_val(@intCast(i), val);
-        }
-
-        const add = case[MEM_AD];
-        const mem_val: u16 = @intCast(case[MEM_VAL]);
-        cpu.set_reg_val(add + SREG_SIZE, mem_val);
-
-        // WHEN
-        const ins_idx = case[INS];
-        std.debug.print("case: {d}, op 0x{X} ", .{ idx, case[OP_CODE] });
-        cpu.run_ins(.{ ins_idx, 0, 0 });
-
-        // THEN
-        try std.testing.expect(cpu.get_reg_val(case[EXP_REG]) == case[EXP_VAL]);
-        try std.testing.expect(cpu.get_reg_val(CF) == case[EXP_C]);
-        try std.testing.expect(cpu.get_reg_val(HF) == case[EXP_H]);
-        try std.testing.expect(cpu.get_reg_val(NF) == case[EXP_N]);
-        try std.testing.expect(cpu.get_reg_val(ZF) == case[EXP_Z]);
-
-        std.debug.print("PASSED\n", .{});
-    }
-}
