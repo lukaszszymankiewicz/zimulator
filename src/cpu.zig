@@ -3,11 +3,11 @@ const mc = @import("mc.zig");
 
 // HARDWARE
 pub const RAM_SIZE: u32 = 256 * 256;
-pub const RAM_BEG: u32 = 128;
-pub const SREG_SIZE: u32 = 128;
+pub const RAM_BEG: u32 = 256;
+pub const SREG_SIZE: u32 = 256;
 
 // REGISTER INDEXES
-pub const DUMMY: u32 = 0b0000_0000;
+pub const IM: u32 = 0b0000_0000;
 pub const A: u32 = 0b0000_0001;
 pub const B: u32 = 0b0000_0010;
 pub const C: u32 = 0b0000_0011;
@@ -15,18 +15,29 @@ pub const D: u32 = 0b0000_0100;
 pub const E: u32 = 0b0000_0101;
 pub const H: u32 = 0b0000_0110;
 pub const L: u32 = 0b0000_0111;
+
+pub const S: u32 = 0b0000_1000;
+pub const P: u32 = 0b0000_1001;
+
 pub const CF: u32 = 0b0000_1000;
 pub const HF: u32 = 0b0000_1001;
 pub const NF: u32 = 0b0000_1010;
 pub const ZF: u32 = 0b0000_1011;
-pub const BC: u32 = 0b0001_0000;
-pub const DE: u32 = 0b0010_0000;
-pub const HL: u32 = 0b0011_0000;
-pub const SP: u32 = 0b0100_0000;
+
+pub const BC: u32 = 0b0010_0011;
+pub const DE: u32 = 0b0100_0101;
+pub const HL: u32 = 0b0110_0111;
+pub const SP: u32 = 0b1000_1001;
 
 // INSTRUCTIONS
 pub const NOP: u32 = 0b0000_0000;
 pub const LD_BC_D16: u32 = 0b0000_0001;
+// ... TODO
+pub const LD_DE_D16: u32 = 0b0001_0001;
+// ... TODO
+pub const LD_HL_D16: u32 = 0b0010_0001;
+// ... TODO
+pub const LD_SP_D16: u32 = 0b0011_0001;
 // ... TODO
 pub const ADD_A_B: u32 = 0b1000_0000;
 pub const ADD_A_C: u32 = 0b1000_0001;
@@ -66,12 +77,12 @@ pub const OP_FMC_H = 6;
 pub const OP_FMC_N = 7;
 pub const OP_FMC_Z = 8;
 
-const NA = 0;
+const NA = 255;
 const MEM_TYPE = SREG_SIZE;
 
 pub const instructions = [_][9]u32{
     [_]u32{ NOP, 1, mc._NOP, NA, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ 1, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_BC_D16, 3, mc._LD_REG_D16, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 2, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 3, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 4, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -87,7 +98,7 @@ pub const instructions = [_][9]u32{
     [_]u32{ 14, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 15, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 16, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 17, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_DE_D16, 3, mc._LD_REG_D16, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 18, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 19, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 20, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -103,7 +114,7 @@ pub const instructions = [_][9]u32{
     [_]u32{ 30, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 31, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 32, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 33, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_HL_D16, 3, mc._LD_REG_D16, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 34, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 35, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 36, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -119,7 +130,7 @@ pub const instructions = [_][9]u32{
     [_]u32{ 46, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 47, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 48, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 49, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_SP_D16, 3, mc._LD_REG_D16, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 50, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 51, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 52, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -244,8 +255,8 @@ pub const CPU = struct {
         return &(self.REG[i]);
     }
 
-    pub fn get_flags(self: *CPU) []u16 {
-        return self.REG[CF .. ZF + 1];
+    pub fn get_regs(self: *CPU) []u16 {
+        return self.REG[0 .. SREG_SIZE + 1];
     }
 
     pub fn get_memory(self: *CPU) []u16 {
@@ -264,24 +275,32 @@ pub const CPU = struct {
         self.set_reg_val(BC, self.REG[B] << 8 | self.REG[C]);
         self.set_reg_val(DE, self.REG[D] << 8 | self.REG[E]);
         self.set_reg_val(HL, self.REG[H] << 8 | self.REG[L]);
+        self.set_reg_val(SP, self.REG[S] << 8 | self.REG[P]);
     }
 
     pub fn run_ins(self: *CPU, program: [3]u32) void {
         const i = program[0];
-        // const lb = program[1];
-        // const hb = program[2];
+        const lb = program[1];
+        const hb = program[2];
 
         self.correct_double_regs();
 
         const reg: u32 = instructions[i][OP_VAL_A];
         const val: u32 = instructions[i][OP_VAL_B];
 
+        // std.debug.print("\nLB to set: {b} \n", .{lb});
+        // std.debug.print("\nHB to set: {b} \n", .{hb});
+
+        const im: u16 = @intCast(lb + (hb << 8));
+        // std.debug.print("\nafter conversion to set: {b} \n", .{im});
+        self.set_reg_val(IM, im);
+
         const a: *u16 = self.get_reg(reg);
-        // const imm: u16 = lb + hb << 8;
-        const b: u16 = self.get_reg_val(val);
-        const flags: []u16 = self.get_flags();
+        // const b: u16 = self.get_reg_val(val);
+
+        const regs: []u16 = self.get_regs();
         const memory: []u16 = self.get_memory();
 
-        mc.MC.calc(instructions[i][OP_MC], instructions[i][OP_FMC_C], instructions[i][OP_FMC_H], instructions[i][OP_FMC_N], instructions[i][OP_FMC_Z], a, b, flags, memory);
+        mc.MC.calc(instructions[i][OP_MC], instructions[i][OP_FMC_C], instructions[i][OP_FMC_H], instructions[i][OP_FMC_N], instructions[i][OP_FMC_Z], a, val, regs, memory);
     }
 };

@@ -6,10 +6,15 @@ const FOURTH_BIT_CONVERSION = 0b0000_1111;
 const SAFE_FOURTH_BIT_CONVERSION = 0b1_0000_1111;
 const EIGHT_BIT_CONVERSION = 0b0000_0000_1111_1111;
 
-const CF: u32 = 0;
-const HF: u32 = 1;
-const NF: u32 = 2;
-const ZF: u32 = 3;
+pub const CF: u32 = 0b0000_1000;
+pub const HF: u32 = 0b0000_1001;
+pub const NF: u32 = 0b0000_1010;
+pub const ZF: u32 = 0b0000_1011;
+
+// const CF: u32 = 0;
+// const HF: u32 = 1;
+// const NF: u32 = 2;
+// const ZF: u32 = 3;
 
 // MICROCODE FUNCTION IDEXES
 pub const _NOP: u32 = 0;
@@ -23,6 +28,7 @@ pub const _SUB_A_MEM: u32 = 5;
 pub const _ADC_A_REG: u32 = 6;
 pub const _ADC_A_MEM: u32 = 7;
 pub const _SBC_A_REG: u32 = 8;
+pub const _LD_REG_D16: u32 = 9;
 
 const C = struct {
     const funs = [_]*const fn (u16, u16, []u16) u16{ C.NOP, C.NOR, C.RET0 };
@@ -42,6 +48,31 @@ const C = struct {
     pub fn calc(i: usize, new: u16, old: u16, flags: []u16) void {
         const func = C.funs[i];
         flags[CF] = func(new, old, flags);
+    }
+};
+
+const H = struct {
+    const funs = [_]*const fn (u16, u16, []u16) u16{ H.NOP, H.NOR, H.RET0, H.RET1 };
+
+    fn NOP(_: u16, _: u16, flags: []u16) u16 {
+        return flags[HF];
+    }
+
+    fn NOR(new: u16, old: u16, _: []u16) u16 {
+        return @intFromBool((new & FOURTH_BIT_OVERFLOW) != (old & FOURTH_BIT_OVERFLOW));
+    }
+
+    fn RET0(_: u16, _: u16, _: []u16) u16 {
+        return 0;
+    }
+
+    fn RET1(_: u16, _: u16, _: []u16) u16 {
+        return 1;
+    }
+
+    pub fn calc(i: usize, new: u16, old: u16, flags: []u16) void {
+        const func = H.funs[i];
+        flags[HF] = func(new, old, flags);
     }
 };
 
@@ -91,33 +122,8 @@ const Z = struct {
     }
 };
 
-const H = struct {
-    const funs = [_]*const fn (u16, []u16) u16{ H.NOP, H.NOR, H.RET0, H.RET1 };
-
-    fn NOP(_: u16, flags: []u16) u16 {
-        return flags[HF];
-    }
-
-    fn NOR(raw_hc: u16, _: []u16) u16 {
-        return @intFromBool((raw_hc & FOURTH_BIT_OVERFLOW) == FOURTH_BIT_OVERFLOW);
-    }
-
-    fn RET0(_: u16, _: []u16) u16 {
-        return 0;
-    }
-
-    fn RET1(_: u16, _: []u16) u16 {
-        return 1;
-    }
-
-    pub fn calc(i: usize, raw_hc: u16, flags: []u16) void {
-        const func = H.funs[i];
-        flags[HF] = func(raw_hc, flags);
-    }
-};
-
 pub const MC = struct {
-    const funs = [_]*const fn (*u16, u16, []u16, []u16) void{
+    const funs = [_]*const fn (*u16, u32, []u16, []u16) void{
         MC.NOP,
         MC.NOP,
         MC.ADD_A_REG,
@@ -127,6 +133,7 @@ pub const MC = struct {
         MC.ADC_A_REG,
         MC.ADC_A_MEM,
         MC.SBC_A_REG,
+        MC.LD_REG_D16,
     };
 
     fn paranoic_cleaning(a: *u16) void {
@@ -141,54 +148,66 @@ pub const MC = struct {
         a.* = a.* & EIGHT_BIT_CONVERSION;
     }
 
-    fn NOP(_: *u16, _: u16, _: []u16, _: []u16) void {}
+    fn NOP(_: *u16, _: u32, _: []u16, _: []u16) void {}
 
-    fn ADD_A_REG(acc: *u16, reg: u16, _: []u16, _: []u16) void {
-        acc.* = (acc.*) + reg;
+    fn ADD_A_REG(acc: *u16, reg: u32, regs: []u16, _: []u16) void {
+        acc.* = (acc.*) + (regs[reg] & EIGHT_BIT_CONVERSION);
     }
 
-    fn ADD_A_MEM(acc: *u16, reg: u16, _: []u16, mem: []u16) void {
-        acc.* = (acc.*) + mem[reg];
+    fn ADD_A_MEM(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        std.debug.print("\nREG idx : {b} \n", .{reg});
+        std.debug.print("\nREG idx : {d} \n", .{reg});
+        std.debug.print("\nREG val : {d} \n", .{mem[regs[reg]]});
+        acc.* = (acc.*) + (mem[regs[reg]] & EIGHT_BIT_CONVERSION);
     }
 
-    fn SUB_A_REG(acc: *u16, reg: u16, _: []u16, _: []u16) void {
-        acc.* = acc.* - reg;
+    fn SUB_A_REG(acc: *u16, reg: u32, regs: []u16, _: []u16) void {
+        acc.* = acc.* - (regs[reg] & EIGHT_BIT_CONVERSION);
     }
 
-    fn SUB_A_MEM(acc: *u16, reg: u16, _: []u16, mem: []u16) void {
-        acc.* = acc.* - mem[reg];
+    fn SUB_A_MEM(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        acc.* = acc.* - (mem[regs[reg]] & EIGHT_BIT_CONVERSION);
     }
 
-    fn ADC_A_REG(acc: *u16, reg: u16, flags: []u16, _: []u16) void {
-        acc.* = (acc.*) + flags[0] + reg;
+    fn ADC_A_REG(acc: *u16, reg: u32, regs: []u16, _: []u16) void {
+        acc.* = (acc.*) + (regs[reg] & EIGHT_BIT_CONVERSION) + regs[CF];
     }
 
-    fn ADC_A_MEM(acc: *u16, reg: u16, flags: []u16, mem: []u16) void {
-        acc.* = (acc.*) + flags[0] + mem[reg];
+    fn ADC_A_MEM(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        acc.* = (acc.*) + (mem[regs[reg]] & EIGHT_BIT_CONVERSION) + regs[CF];
     }
 
-    fn SBC_A_REG(acc: *u16, reg: u16, flags: []u16, _: []u16) void {
-        acc.* = acc.* - reg - flags[0];
+    fn SBC_A_REG(acc: *u16, reg: u32, regs: []u16, _: []u16) void {
+        acc.* = acc.* - (regs[reg] & EIGHT_BIT_CONVERSION) - regs[CF];
     }
 
-    pub fn calc(mc: u32, c_mc: u32, h_mc: u32, n_mc: u32, z_mc: u32, a: *u16, reg: u16, flags: []u16, memory: []u16) void {
+    fn LD_REG_D16(_: *u16, reg: u32, regs: []u16, _: []u16) void {
+        const acc: u16 = regs[0];
+        std.debug.print("\nAGG to set: {b} \n", .{acc});
+        std.debug.print("\nREG to set: {b} \n", .{reg});
+        std.debug.print("\nHB to set: {b} \n", .{((acc) & 0b1111_1111_0000_0000) >> 8});
+        std.debug.print("\nLB to set: {b} \n", .{acc & 0b0000_0000_1111_1111});
+        std.debug.print("\nHB REG idx: {b} \n", .{(reg & 0b1111_0000) >> 4});
+        std.debug.print("\nLB REG idx: {b} \n", .{reg & 0b0000_1111});
+        regs[(reg & 0b1111_0000) >> 4] = acc & 0b0000_0000_1111_1111;
+        regs[reg & 0b0000_1111] = (acc & 0b1111_1111_0000_0000) >> 8;
+    }
+
+    pub fn calc(mc: u32, c_mc: u32, h_mc: u32, n_mc: u32, z_mc: u32, a: *u16, reg: u32, regs: []u16, memory: []u16) void {
         MC.add_overflow_bit(a);
         const mc_func = MC.funs[mc];
 
-        // calc raw_ HC
-        var a_hc = (a.*) & SAFE_FOURTH_BIT_CONVERSION;
+        const a_hc = a.*;
         const a_c = a.*;
-        const reg_hc = reg & FOURTH_BIT_CONVERSION;
 
         // calc result and raw HC
-        mc_func(a, reg, flags, memory);
-        mc_func(&a_hc, reg_hc, flags, memory);
+        mc_func(a, reg, regs, memory);
 
-        // set flags
-        C.calc(c_mc, a.*, a_c, flags);
-        H.calc(h_mc, a_hc, flags);
-        N.calc(n_mc, a.*, flags);
-        Z.calc(z_mc, a.*, flags);
+        // set regs
+        C.calc(c_mc, a.*, a_c, regs);
+        H.calc(h_mc, a.*, a_hc, regs);
+        N.calc(n_mc, a.*, regs);
+        Z.calc(z_mc, a.*, regs);
 
         // cleanup
         MC.trunc(a);
