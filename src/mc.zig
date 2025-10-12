@@ -11,11 +11,6 @@ pub const HF: u32 = 0b0000_1001;
 pub const NF: u32 = 0b0000_1010;
 pub const ZF: u32 = 0b0000_1011;
 
-// const CF: u32 = 0;
-// const HF: u32 = 1;
-// const NF: u32 = 2;
-// const ZF: u32 = 3;
-
 // MICROCODE FUNCTION IDEXES
 pub const _NOP: u32 = 0;
 pub const _NOR: u32 = 1;
@@ -29,6 +24,11 @@ pub const _ADC_A_REG: u32 = 6;
 pub const _ADC_A_MEM: u32 = 7;
 pub const _SBC_A_REG: u32 = 8;
 pub const _LD_REG_D16: u32 = 9;
+pub const _LD_MEM_A: u32 = 10;
+pub const _LD_HLPLUS_A: u32 = 11;
+pub const _LD_HLMINUS_A: u32 = 12;
+pub const _INC_REG: u32 = 13;
+pub const _DEC_REG: u32 = 14;
 
 const C = struct {
     const funs = [_]*const fn (u16, u16, []u16) u16{ C.NOP, C.NOR, C.RET0 };
@@ -134,6 +134,11 @@ pub const MC = struct {
         MC.ADC_A_MEM,
         MC.SBC_A_REG,
         MC.LD_REG_D16,
+        MC.LD_MEM_A,
+        MC.LD_HLPLUS_A,
+        MC.LD_HLMINUS_A,
+        MC.INC_REG,
+        MC.DEC_REG,
     };
 
     fn paranoic_cleaning(a: *u16) void {
@@ -155,9 +160,6 @@ pub const MC = struct {
     }
 
     fn ADD_A_MEM(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
-        std.debug.print("\nREG idx : {b} \n", .{reg});
-        std.debug.print("\nREG idx : {d} \n", .{reg});
-        std.debug.print("\nREG val : {d} \n", .{mem[regs[reg]]});
         acc.* = (acc.*) + (mem[regs[reg]] & EIGHT_BIT_CONVERSION);
     }
 
@@ -181,20 +183,48 @@ pub const MC = struct {
         acc.* = acc.* - (regs[reg] & EIGHT_BIT_CONVERSION) - regs[CF];
     }
 
+    fn LD_MEM_A(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        mem[regs[reg]] = (acc.* & EIGHT_BIT_CONVERSION);
+    }
+
     fn LD_REG_D16(_: *u16, reg: u32, regs: []u16, _: []u16) void {
+        // hack
         const acc: u16 = regs[0];
-        std.debug.print("\nAGG to set: {b} \n", .{acc});
-        std.debug.print("\nREG to set: {b} \n", .{reg});
-        std.debug.print("\nHB to set: {b} \n", .{((acc) & 0b1111_1111_0000_0000) >> 8});
-        std.debug.print("\nLB to set: {b} \n", .{acc & 0b0000_0000_1111_1111});
-        std.debug.print("\nHB REG idx: {b} \n", .{(reg & 0b1111_0000) >> 4});
-        std.debug.print("\nLB REG idx: {b} \n", .{reg & 0b0000_1111});
+
         regs[(reg & 0b1111_0000) >> 4] = acc & 0b0000_0000_1111_1111;
         regs[reg & 0b0000_1111] = (acc & 0b1111_1111_0000_0000) >> 8;
     }
 
+    fn DEC_REG(_: *u16, reg: u32, regs: []u16, _: []u16) void {
+        const h: u32 = @intCast((regs[(reg & 0b1111_0000) >> 4]) << 8);
+        const l: u32 = @intCast(regs[reg & 0b0000_1111]);
+        // dummy bit for overflowing reasons
+        const hl: u32 = ((h + l) | 0b1_0000_0000_0000_0000) - 1;
+        regs[(reg & 0b1111_0000) >> 4] = @intCast((hl & 0b1111_1111_0000_0000) >> 8);
+        regs[reg & 0b0000_1111] = @intCast(hl & 0b0000_0000_1111_1111);
+    }
+
+    fn INC_REG(_: *u16, reg: u32, regs: []u16, _: []u16) void {
+        const h: u32 = @intCast((regs[(reg & 0b1111_0000) >> 4]) << 8);
+        const l: u32 = @intCast(regs[reg & 0b0000_1111]);
+        const hl: u32 = h + l + 1;
+        regs[(reg & 0b1111_0000) >> 4] = @intCast((hl & 0b1111_1111_0000_0000) >> 8);
+        regs[reg & 0b0000_1111] = @intCast(hl & 0b0000_0000_1111_1111);
+    }
+
+    fn LD_HLMINUS_A(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        mem[regs[reg]] = (acc.* & EIGHT_BIT_CONVERSION);
+        MC.DEC_REG(acc, reg, regs, mem);
+    }
+
+    fn LD_HLPLUS_A(acc: *u16, reg: u32, regs: []u16, mem: []u16) void {
+        mem[regs[reg]] = (acc.* & EIGHT_BIT_CONVERSION);
+        MC.INC_REG(acc, reg, regs, mem);
+    }
+
     pub fn calc(mc: u32, c_mc: u32, h_mc: u32, n_mc: u32, z_mc: u32, a: *u16, reg: u32, regs: []u16, memory: []u16) void {
         MC.add_overflow_bit(a);
+
         const mc_func = MC.funs[mc];
 
         const a_hc = a.*;

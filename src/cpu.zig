@@ -16,29 +16,37 @@ pub const E: u32 = 0b0000_0101;
 pub const H: u32 = 0b0000_0110;
 pub const L: u32 = 0b0000_0111;
 
-pub const S: u32 = 0b0000_1000;
-pub const P: u32 = 0b0000_1001;
-
 pub const CF: u32 = 0b0000_1000;
 pub const HF: u32 = 0b0000_1001;
 pub const NF: u32 = 0b0000_1010;
 pub const ZF: u32 = 0b0000_1011;
 
+pub const S: u32 = 0b0000_1100;
+pub const P: u32 = 0b0000_1101;
+
 pub const BC: u32 = 0b0010_0011;
 pub const DE: u32 = 0b0100_0101;
 pub const HL: u32 = 0b0110_0111;
-pub const SP: u32 = 0b1000_1001;
+pub const SP: u32 = 0b1100_1101;
 
 // INSTRUCTIONS
 pub const NOP: u32 = 0b0000_0000;
 pub const LD_BC_D16: u32 = 0b0000_0001;
-// ... TODO
+pub const LD_BC_A: u32 = 0b0000_0010;
+pub const INC_BC: u32 = 0b0000_0011;
+
 pub const LD_DE_D16: u32 = 0b0001_0001;
-// ... TODO
+pub const LD_DE_A: u32 = 0b0001_0010;
+pub const INC_DE: u32 = 0b0001_0011;
 pub const LD_HL_D16: u32 = 0b0010_0001;
-// ... TODO
+pub const LD_HLPLUS_A: u32 = 0b0010_0010;
+
+pub const INC_HL: u32 = 0b0010_0011;
+pub const INC_SP: u32 = 0b0011_0011;
+
 pub const LD_SP_D16: u32 = 0b0011_0001;
-// ... TODO
+pub const LD_HLMINUS_A: u32 = 0b0011_0010;
+
 pub const ADD_A_B: u32 = 0b1000_0000;
 pub const ADD_A_C: u32 = 0b1000_0001;
 pub const ADD_A_D: u32 = 0b1000_0010;
@@ -83,8 +91,8 @@ const MEM_TYPE = SREG_SIZE;
 pub const instructions = [_][9]u32{
     [_]u32{ NOP, 1, mc._NOP, NA, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ LD_BC_D16, 3, mc._LD_REG_D16, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ 2, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 3, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_BC_A, 1, mc._LD_MEM_A, A, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_BC, 1, mc._INC_REG, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 4, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 5, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 6, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -99,8 +107,8 @@ pub const instructions = [_][9]u32{
     [_]u32{ 15, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 16, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ LD_DE_D16, 3, mc._LD_REG_D16, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ 18, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 19, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_DE_A, 1, mc._LD_MEM_A, A, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_DE, 1, mc._INC_REG, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 20, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 21, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 22, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -115,8 +123,8 @@ pub const instructions = [_][9]u32{
     [_]u32{ 31, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 32, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ LD_HL_D16, 3, mc._LD_REG_D16, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ 34, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 35, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_HLPLUS_A, 1, mc._LD_HLPLUS_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_HL, 1, mc._INC_REG, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 36, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 37, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 38, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -131,8 +139,8 @@ pub const instructions = [_][9]u32{
     [_]u32{ 47, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 48, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ LD_SP_D16, 3, mc._LD_REG_D16, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ 50, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 51, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_HLMINUS_A, 1, mc._LD_HLMINUS_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_SP, 1, mc._INC_REG, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 52, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 53, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 54, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -287,16 +295,11 @@ pub const CPU = struct {
 
         const reg: u32 = instructions[i][OP_VAL_A];
         const val: u32 = instructions[i][OP_VAL_B];
-
-        // std.debug.print("\nLB to set: {b} \n", .{lb});
-        // std.debug.print("\nHB to set: {b} \n", .{hb});
-
         const im: u16 = @intCast(lb + (hb << 8));
-        // std.debug.print("\nafter conversion to set: {b} \n", .{im});
+
         self.set_reg_val(IM, im);
 
         const a: *u16 = self.get_reg(reg);
-        // const b: u16 = self.get_reg_val(val);
 
         const regs: []u16 = self.get_regs();
         const memory: []u16 = self.get_memory();
