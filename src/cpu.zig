@@ -28,25 +28,26 @@ pub const BC: u32 = 0b0010_0011;
 pub const DE: u32 = 0b0100_0101;
 pub const HL: u32 = 0b0110_0111;
 pub const SP: u32 = 0b1100_1101;
+pub const PC: u32 = 0b1100_1110;
 
 // INSTRUCTIONS
 pub const NOP: u32 = 0b0000_0000;
 pub const LD_BC_D16: u32 = 0b0000_0001;
 pub const LD_BC_A: u32 = 0b0000_0010;
 pub const INC_BC: u32 = 0b0000_0011;
-
 pub const LD_DE_D16: u32 = 0b0001_0001;
 pub const LD_DE_A: u32 = 0b0001_0010;
 pub const INC_DE: u32 = 0b0001_0011;
 pub const LD_HL_D16: u32 = 0b0010_0001;
-pub const LD_HLPLUS_A: u32 = 0b0010_0010;
-
+pub const LD_HL_PLS_A: u32 = 0b0010_0010;
+pub const LD_L_D8: u32 = 0b0010_1110;
+pub const LD_E_D8: u32 = 0b0001_1110;
+pub const LD_C_D8: u32 = 0b0000_1110;
+pub const LD_H_D8: u32 = 0b0010_0110;
 pub const INC_HL: u32 = 0b0010_0011;
 pub const INC_SP: u32 = 0b0011_0011;
-
 pub const LD_SP_D16: u32 = 0b0011_0001;
-pub const LD_HLMINUS_A: u32 = 0b0011_0010;
-
+pub const LD_HL_DEC_A: u32 = 0b0011_0010;
 pub const ADD_A_B: u32 = 0b1000_0000;
 pub const ADD_A_C: u32 = 0b1000_0001;
 pub const ADD_A_D: u32 = 0b1000_0010;
@@ -55,7 +56,9 @@ pub const ADD_A_H: u32 = 0b1000_0100;
 pub const ADD_A_L: u32 = 0b1000_0101;
 pub const ADD_A_HL: u32 = 0b1000_0110;
 pub const ADD_A_A: u32 = 0b1000_0111;
-
+pub const LD_A_D8: u32 = 0b0011_1110;
+pub const LD_B_D8: u32 = 0b0000_0110;
+pub const LD_D_D8: u32 = 0b0001_0110;
 pub const ADC_A_B: u32 = 0b1000_1000;
 pub const ADC_A_C: u32 = 0b1000_1001;
 pub const ADC_A_D: u32 = 0b1000_1010;
@@ -64,7 +67,6 @@ pub const ADC_A_H: u32 = 0b1000_1100;
 pub const ADC_A_L: u32 = 0b1000_1101;
 pub const ADC_A_HL: u32 = 0b1000_1110;
 pub const ADC_A_A: u32 = 0b1000_1111;
-
 pub const SUB_B: u32 = 0b1001_0000;
 pub const SUB_C: u32 = 0b1001_0001;
 pub const SUB_D: u32 = 0b1001_0010;
@@ -73,6 +75,10 @@ pub const SUB_H: u32 = 0b1001_0100;
 pub const SUB_L: u32 = 0b1001_0101;
 pub const SUB_HL: u32 = 0b1001_0110;
 pub const SUB_A: u32 = 0b1001_0111;
+pub const LD_A_D16: u32 = 250;
+pub const LD_A16_A: u32 = 0b1110_1010;
+pub const CP_D8: u32 = 254;
+pub const JP_C_A16: u32 = 218;
 
 // GBA INSTRUCTION TABLE
 pub const OP_CODE = 0;
@@ -90,12 +96,12 @@ const MEM_TYPE = SREG_SIZE;
 
 pub const instructions = [_][9]u32{
     [_]u32{ NOP, 1, mc._NOP, NA, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ LD_BC_D16, 3, mc._LD_REG_D16, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ LD_BC_A, 1, mc._LD_MEM_A, A, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ INC_BC, 1, mc._INC_REG, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_BC_D16, 3, mc._LD_RR_II, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_BC_A, 1, mc._LD_MM_R, A, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_BC, 1, mc._PLS_R, NA, BC, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 4, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 5, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 6, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_B_D8, 2, mc._LD_R_I, B, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 7, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 8, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 9, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -103,15 +109,15 @@ pub const instructions = [_][9]u32{
     [_]u32{ 11, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 12, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 13, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 14, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_C_D8, 2, mc._LD_R_I, C, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 15, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 16, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ LD_DE_D16, 3, mc._LD_REG_D16, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ LD_DE_A, 1, mc._LD_MEM_A, A, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ INC_DE, 1, mc._INC_REG, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_DE_D16, 3, mc._LD_RR_II, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_DE_A, 1, mc._LD_MM_R, A, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_DE, 1, mc._PLS_R, NA, DE, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 20, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 21, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 22, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_D_D8, 2, mc._LD_R_I, D, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 23, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 24, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 25, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -119,15 +125,15 @@ pub const instructions = [_][9]u32{
     [_]u32{ 27, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 28, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 29, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 30, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_E_D8, 2, mc._LD_R_I, E, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 31, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 32, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ LD_HL_D16, 3, mc._LD_REG_D16, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ LD_HLPLUS_A, 1, mc._LD_HLPLUS_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ INC_HL, 1, mc._INC_REG, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_HL_D16, 3, mc._LD_RR_II, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_HL_PLS_A, 1, mc._LD_HL_PLS_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_HL, 1, mc._PLS_R, NA, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 36, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 37, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 38, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_H_D8, 2, mc._LD_R_I, H, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 39, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 40, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 41, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -135,12 +141,12 @@ pub const instructions = [_][9]u32{
     [_]u32{ 43, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 44, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 45, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 46, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_L_D8, 2, mc._LD_R_I, L, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 47, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 48, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ LD_SP_D16, 3, mc._LD_REG_D16, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ LD_HLMINUS_A, 1, mc._LD_HLMINUS_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
-    [_]u32{ INC_SP, 1, mc._INC_REG, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_SP_D16, 3, mc._LD_RR_II, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ LD_HL_DEC_A, 1, mc._LD_HL_DEC_A, A, HL, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ INC_SP, 1, mc._PLS_R, NA, SP, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 52, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 53, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 54, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -151,7 +157,7 @@ pub const instructions = [_][9]u32{
     [_]u32{ 59, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 60, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 61, 1, 0, 0, 0, 0, 0, 0, 0 },
-    [_]u32{ 62, 1, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_A_D8, 2, mc._LD_R_I, A, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
     [_]u32{ 63, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 64, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 65, 1, 0, 0, 0, 0, 0, 0, 0 },
@@ -217,33 +223,136 @@ pub const instructions = [_][9]u32{
     [_]u32{ 125, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 126, 1, 0, 0, 0, 0, 0, 0, 0 },
     [_]u32{ 127, 1, 0, 0, 0, 0, 0, 0, 0 },
-
-    [_]u32{ ADD_A_B, 1, mc._ADD_A_REG, A, B, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_C, 1, mc._ADD_A_REG, A, C, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_D, 1, mc._ADD_A_REG, A, D, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_E, 1, mc._ADD_A_REG, A, E, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_H, 1, mc._ADD_A_REG, A, H, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_L, 1, mc._ADD_A_REG, A, L, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_HL, 1, mc._ADD_A_MEM, A, HL, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADD_A_A, 1, mc._ADD_A_REG, A, A, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_B, 1, mc._ADD_A_R, A, B, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_C, 1, mc._ADD_A_R, A, C, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_D, 1, mc._ADD_A_R, A, D, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_E, 1, mc._ADD_A_R, A, E, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_H, 1, mc._ADD_A_R, A, H, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_L, 1, mc._ADD_A_R, A, L, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_HL, 1, mc._ADD_A_MM, A, HL, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADD_A_A, 1, mc._ADD_A_R, A, A, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
     // ADC
-    [_]u32{ ADC_A_B, 1, mc._ADC_A_REG, A, B, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_C, 1, mc._ADC_A_REG, A, C, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_D, 1, mc._ADC_A_REG, A, D, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_E, 1, mc._ADC_A_REG, A, E, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_H, 1, mc._ADC_A_REG, A, H, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_L, 1, mc._ADC_A_REG, A, L, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_HL, 1, mc._ADC_A_MEM, A, HL, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
-    [_]u32{ ADC_A_A, 1, mc._ADC_A_REG, A, A, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_B, 1, mc._ADC_A_R, A, B, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_C, 1, mc._ADC_A_R, A, C, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_D, 1, mc._ADC_A_R, A, D, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_E, 1, mc._ADC_A_R, A, E, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_H, 1, mc._ADC_A_R, A, H, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_L, 1, mc._ADC_A_R, A, L, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_HL, 1, mc._ADC_A_MM, A, HL, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
+    [_]u32{ ADC_A_A, 1, mc._ADC_A_R, A, A, mc._NOR, mc._NOR, mc._RET0, mc._NOR },
     // SUB
-    [_]u32{ SUB_B, 1, mc._SUB_A_REG, A, B, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_C, 1, mc._SUB_A_REG, A, C, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_D, 1, mc._SUB_A_REG, A, D, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_E, 1, mc._SUB_A_REG, A, E, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_H, 1, mc._SUB_A_REG, A, H, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_L, 1, mc._SUB_A_REG, A, L, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_HL, 1, mc._SUB_A_MEM, A, HL, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
-    [_]u32{ SUB_A, 1, mc._SUB_A_REG, A, A, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_B, 1, mc._SUB_A_R, A, B, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_C, 1, mc._SUB_A_R, A, C, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_D, 1, mc._SUB_A_R, A, D, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_E, 1, mc._SUB_A_R, A, E, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_H, 1, mc._SUB_A_R, A, H, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_L, 1, mc._SUB_A_R, A, L, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_HL, 1, mc._SUB_A_MM, A, HL, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ SUB_A, 1, mc._SUB_A_R, A, A, mc._NOR, mc._NOR, mc._RET1, mc._NOR },
+    [_]u32{ 152, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 153, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 154, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 155, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 156, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 157, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 158, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 159, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 160, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 161, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 162, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 163, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 164, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 165, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 166, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 167, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 168, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 169, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 170, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 171, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 172, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 173, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 174, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 175, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 176, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 177, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 178, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 179, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 180, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 181, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 182, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 183, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 184, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 185, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 186, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 187, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 188, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 189, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 190, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 191, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 192, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 193, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 194, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 195, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 196, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 197, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 198, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 199, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 200, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 201, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 202, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 203, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 204, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 205, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 206, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 207, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 208, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 209, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 210, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 211, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 212, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 213, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 214, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 215, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 216, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 217, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ JP_C_A16, 3, mc._JP_F_II, NA, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ 219, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 220, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 221, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 222, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 223, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 224, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 225, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 226, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 227, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 228, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 229, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 230, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 231, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 232, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 233, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_A16_A, 3, mc._LD_DD_R, A, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ 235, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 236, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 237, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 238, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 239, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 240, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 241, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 242, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 243, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 244, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 245, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 246, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 247, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 248, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 249, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ LD_A_D16, 3, mc._LD_R_DD, A, NA, mc._NOP, mc._NOP, mc._NOP, mc._NOP },
+    [_]u32{ 251, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 252, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ 253, 0, 0, 0, 0, 0, 0, 0, 0 },
+    [_]u32{ CP_D8, 2, mc._NOP, A, NA, mc._NOP, mc._NOR, mc._RET1, mc._CP },
+    [_]u32{ 255, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
 pub const CPU = struct {
