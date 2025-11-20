@@ -1,14 +1,12 @@
-const cpu = @import("cpu.zig");
-
 const std = @import("std");
-const ins_mod = @import("ins.zig");
-const instruction_t = @import("ins.zig").instructions_t;
-const ins = ins_mod.instructions;
 
-const DataType = u8;
-const IndexType = u16;
-const InstructionType = u16;
-const HardwareSize = u32;
+const cpu = @import("cpu.zig");
+const hw = @import("hardware.zig");
+const r = @import("reg.zig");
+const t = @import("types.zig");
+
+const ins_mod = @import("ins.zig");
+const ins = ins_mod.instructions;
 
 pub const INIT = 0;
 pub const EXP = 1;
@@ -16,10 +14,11 @@ pub const IMM0 = 0;
 pub const IMM1 = 1;
 pub const ADDRESS = 0;
 pub const VAL = 1;
-const RegVals = [2]IndexType;
+
+const RegVals = [2]t.IndexType;
 
 const CASE = struct {
-    OP: DataType = 0,
+    OP: t.DataType = 0,
     A: RegVals = .{ 0, 0 },
     B: RegVals = .{ 0, 0 },
     C: RegVals = .{ 0, 0 },
@@ -305,45 +304,45 @@ test "new approach" {
         // PREP
         var c = cpu.CPU.init();
 
-        c.REG[@intCast(cpu.A)] = @intCast(case.A[INIT]);
-        c.REG[@intCast(cpu.B)] = @intCast(case.B[INIT]);
-        c.REG[@intCast(cpu.C)] = @intCast(case.C[INIT]);
-        c.REG[@intCast(cpu.D)] = @intCast(case.D[INIT]);
-        c.REG[@intCast(cpu.E)] = @intCast(case.E[INIT]);
-        c.REG[@intCast(cpu.H)] = @intCast(case.H[INIT]);
-        c.REG[@intCast(cpu.L)] = @intCast(case.L[INIT]);
-        c.REG[@intCast(cpu.CF)] = @intCast(case.CF[INIT]);
-        c.REG[@intCast(cpu.HF)] = @intCast(case.HF[INIT]);
-        c.REG[@intCast(cpu.NF)] = @intCast(case.NF[INIT]);
-        c.REG[@intCast(cpu.ZF)] = @intCast(case.ZF[INIT]);
-        c.REG[@intCast(cpu.S)] = @intCast(case.S[INIT]);
-        c.REG[@intCast(cpu.P)] = @intCast(case.P[INIT]);
-        c.REG[@intCast(cpu.PC)] = @intCast(case.PC[INIT]);
-        c.REG[@intCast(case.MEM[ADDRESS] + cpu.SREG_SIZE)] = @intCast(case.MEM[VAL]);
+        c.REG[@intCast(r.A)] = @intCast(case.A[INIT]);
+        c.REG[@intCast(r.B)] = @intCast(case.B[INIT]);
+        c.REG[@intCast(r.C)] = @intCast(case.C[INIT]);
+        c.REG[@intCast(r.D)] = @intCast(case.D[INIT]);
+        c.REG[@intCast(r.E)] = @intCast(case.E[INIT]);
+        c.REG[@intCast(r.H)] = @intCast(case.H[INIT]);
+        c.REG[@intCast(r.L)] = @intCast(case.L[INIT]);
+        c.REG[@intCast(r.CF)] = @intCast(case.CF[INIT]);
+        c.REG[@intCast(r.HF)] = @intCast(case.HF[INIT]);
+        c.REG[@intCast(r.NF)] = @intCast(case.NF[INIT]);
+        c.REG[@intCast(r.ZF)] = @intCast(case.ZF[INIT]);
+        c.REG[@intCast(r.S)] = @intCast(case.S[INIT]);
+        c.REG[@intCast(r.P)] = @intCast(case.P[INIT]);
+        c.REG[@intCast(r.PC)] = @intCast(case.PC[INIT]);
+        c.REG[@intCast(case.MEM[ADDRESS] + hw.SREG_SIZE)] = @intCast(case.MEM[VAL]);
 
         // WHEN
         std.debug.print("case: {d}, op 0x{X} ", .{ idx, case.OP });
-        var program: [3]DataType = [_]DataType{ case.OP, @intCast(case.IMM[IMM0]), @intCast(case.IMM[IMM1]) };
+        var program: [3]t.DataType = [_]t.DataType{ case.OP, @intCast(case.IMM[IMM0]), @intCast(case.IMM[IMM1]) };
         c.run_ins(&program);
 
         // THEN
-        try std.testing.expect(c.REG[@intCast(cpu.A)] == case.A[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.B)] == case.B[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.C)] == case.C[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.D)] == case.D[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.E)] == case.E[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.H)] == case.H[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.L)] == case.L[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.CF)] == case.CF[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.HF)] == case.HF[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.NF)] == case.NF[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.ZF)] == case.ZF[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.S)] == case.S[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.P)] == case.P[EXP]);
-        try std.testing.expect(c.REG[@intCast(cpu.PC)] == case.PC[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.A)] == case.A[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.B)] == case.B[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.C)] == case.C[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.D)] == case.D[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.E)] == case.E[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.H)] == case.H[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.L)] == case.L[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.CF)] == case.CF[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.HF)] == case.HF[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.NF)] == case.NF[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.ZF)] == case.ZF[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.S)] == case.S[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.P)] == case.P[EXP]);
+        try std.testing.expect(c.REG[@intCast(r.PC)] == case.PC[EXP]);
 
-        std.debug.print("calc: {d}, exp {d} ", .{ c.REG[@intCast(case.EXP_MEM[0] + cpu.SREG_SIZE)], case.EXP_MEM[1] });
-        try std.testing.expect(c.REG[@intCast(case.EXP_MEM[0] + cpu.SREG_SIZE)] == case.EXP_MEM[1]);
+        std.debug.print("calc: {d}, exp {d} ", .{ c.REG[@intCast(case.EXP_MEM[0] + hw.SREG_SIZE)], case.EXP_MEM[1] });
+        try std.testing.expect(c.REG[@intCast(case.EXP_MEM[0] + hw.SREG_SIZE)] == case.EXP_MEM[1]);
 
         std.debug.print("PASSED\n", .{});
     }
