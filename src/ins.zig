@@ -2671,14 +2671,14 @@ pub const instructions = [_]instruction_t{
     instruction_t.init(
         218,
         0xda,
-        &[_]MCFuncPtr{mc.NOP},
-        &[_]t.DataType{r.A},
+        &[_]MCFuncPtr{ mc.INC_RR, mc.LD_IM, mc.LD_IM, mc.MV_MM, mc.JP_Z },
+        &[_]t.DataType{ r.PC, r.TML, r.TMH, r.TM, r.TM },
         fs.FS_NOP,
         fs.FS_NOP,
         fs.FS_NOP,
         fs.FS_NOP,
-        "",
-        "",
+        "JP Z, a16",
+        "Load the 16-bit immediate operand a16 into the program counter PC if the Z flag is 1. If the Z flag is 1, then the subsequent instruction starts at address a16. If not, the contents of PC are incremented, and the next instruction following the current JP instruction is executed (as usual). The second byte of the object code (immediately following the opcode) corresponds to the lower-order byte of a16 (bits 0-7), and the third byte of the object code corresponds to the higher-order byte (bits 8-15).",
     ),
     instruction_t.init(
         219,

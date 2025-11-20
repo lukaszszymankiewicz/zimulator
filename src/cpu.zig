@@ -11,11 +11,9 @@ pub const CPU = struct {
     REG: [hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE]t.DataType,
 
     pub fn init() CPU {
-        var cpu: CPU = CPU{
+        return CPU{
             .REG = [_]t.DataType{0} ** (hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE),
         };
-        cpu.REG[r.ONS] = 1;
-        return cpu;
     }
 
     pub fn run_microcode(self: *CPU, instruction: instruction_t, n: usize) void {
@@ -25,8 +23,8 @@ pub const CPU = struct {
         fun(&self.REG, arg);
     }
 
-    pub fn get_acc_buffer(self: *CPU) [5]i32 {
-        var accs: [5]i32 = undefined;
+    pub fn get_acc_buffer(self: *CPU) [8]i32 {
+        var accs: [8]i32 = undefined;
         accs[0] = @intCast(self.REG[r.A]);
         return accs;
     }
@@ -35,35 +33,33 @@ pub const CPU = struct {
         buf[i + 1] = @as(i32, self.REG[r.A]);
     }
 
-    pub fn set_C_flag(self: *CPU, buf: []i32, instruction: instruction_t) void {
+    pub fn set_flags(self: *CPU, buf: []i32, instruction: instruction_t) void {
         self.REG[r.CF] = instruction.CXFS(buf, self.REG[r.CF]);
-    }
-
-    pub fn set_H_flag(self: *CPU, buf: []i32, instruction: instruction_t) void {
         self.REG[r.HF] = instruction.HXFS(buf, self.REG[r.HF]);
-    }
-
-    pub fn set_N_flag(self: *CPU, buf: []i32, instruction: instruction_t) void {
         self.REG[r.NF] = instruction.NXFS(buf, self.REG[r.HF]);
-    }
-
-    pub fn set_Z_flag(self: *CPU, buf: []i32, instruction: instruction_t) void {
         self.REG[r.ZF] = instruction.ZXFS(buf, self.REG[r.ZF]);
     }
 
+    pub fn get_rr(self: *CPU, reg: t.DataType) t.HardwareSize {
+        const h: u32 = @intCast(self.REG[reg]);
+        const l: u32 = @intCast(self.REG[reg + 1]);
+        return (h << 8) + l;
+    }
+
     pub fn read_program(self: *CPU, program: []t.DataType) void {
+        const pc: t.HardwareSize = self.get_rr(r.PC);
+
         for (0..program.len) |i| {
-            self.REG[hw.SREG_SIZE + hw.RAM_SIZE + i] = program[i];
+            self.REG[hw.PROG_START + pc + i] = program[i];
         }
-        self.REG[r.PCH] = 0;
-        self.REG[r.PCL] = 0;
     }
 
     pub fn run_ins(self: *CPU, program: []t.DataType) void {
         self.read_program(program);
+        const pc: t.HardwareSize = self.get_rr(r.PC);
 
         // read instruction from PC
-        const idx = self.REG[hw.SREG_SIZE + hw.RAM_SIZE + self.REG[r.PC]];
+        const idx = self.REG[hw.PROG_START + pc];
         const instruction: instruction_t = instruction_collection[idx];
         const n = instruction.NMCS;
 
@@ -76,14 +72,6 @@ pub const CPU = struct {
             self.fill_acc_buffer(&accs, i);
         }
 
-        self.set_C_flag(accs[0 .. n + 1], instruction);
-        self.set_H_flag(accs[0 .. n + 1], instruction);
-        self.set_N_flag(accs[0 .. n + 1], instruction);
-        self.set_Z_flag(accs[0 .. n + 1], instruction);
-
-        std.debug.print("\nCF: {d}\n", .{self.REG[r.CF]});
-        std.debug.print("\nHF: {d}\n", .{self.REG[r.HF]});
-        std.debug.print("\nNF: {d}\n", .{self.REG[r.NF]});
-        std.debug.print("\nZF: {d}\n", .{self.REG[r.ZF]});
+        self.set_flags(accs[0 .. n + 1], instruction);
     }
 };
