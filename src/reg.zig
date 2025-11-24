@@ -29,6 +29,7 @@ pub const MEM: t.IndexType = 0b0111_1110;
 pub const PRG: t.IndexType = 0b0111_1111;
 pub const ADH: t.IndexType = 0b0011_1110;
 pub const ADL: t.IndexType = 0b0011_1111;
+pub const FLG: t.IndexType = 0b0110_0111;
 pub const TMH: t.IndexType = 0b1111_1110;
 pub const TML: t.IndexType = 0b1111_1111;
 pub const TM: t.IndexType = TMH;

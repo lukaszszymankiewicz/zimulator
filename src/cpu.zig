@@ -11,9 +11,12 @@ pub const CPU = struct {
     REG: [hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE]t.DataType,
 
     pub fn init() CPU {
-        return CPU{
+        var cpu = CPU{
             .REG = [_]t.DataType{0} ** (hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE),
         };
+        // set special fixed registers
+        cpu.REG[r.ONS] = 1;
+        return cpu;
     }
 
     pub fn run_microcode(self: *CPU, instruction: instruction_t, n: usize) void {
