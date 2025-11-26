@@ -1,3 +1,5 @@
+test
+libs/
 .zig-cache
 zig-out
 *.gb

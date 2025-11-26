@@ -9,5 +9,8 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    exe.addIncludePath(b.path("libs/raylib/include/raylib.h"));
+    exe.linkSystemLibrary("raylib");
+
     b.installArtifact(exe);
 }

@@ -1,4 +1,6 @@
 const std = @import("std");
+// TODO: this is no used by now
+const raylib = @cImport(@embedFile("raylib.h"));
 
 const hw = @import("hardware.zig");
 const r = @import("reg.zig");
@@ -19,8 +21,8 @@ pub const CPU = struct {
         return cpu;
     }
 
+    // TODO: to the microcode module
     pub fn run_microcode(self: *CPU, instruction: instruction_t, n: usize) void {
-        // TODO: to to struct method?
         const fun = instruction.MCS[n];
         const arg = instruction.ARGS[n];
         fun(&self.REG, arg);
@@ -36,6 +38,7 @@ pub const CPU = struct {
         buf[i + 1] = @as(i32, self.REG[r.A]);
     }
 
+    // TODO: to the flag setter module
     pub fn set_flags(self: *CPU, buf: []i32, instruction: instruction_t) void {
         self.REG[r.CF] = instruction.CXFS(buf, self.REG[r.CF]);
         self.REG[r.HF] = instruction.HXFS(buf, self.REG[r.HF]);
@@ -43,6 +46,7 @@ pub const CPU = struct {
         self.REG[r.ZF] = instruction.ZXFS(buf, self.REG[r.ZF]);
     }
 
+    // TODO: to the register module
     pub fn get_rr(self: *CPU, reg: t.DataType) t.HardwareSize {
         const h: u32 = @intCast(self.REG[reg]);
         const l: u32 = @intCast(self.REG[reg + 1]);
@@ -78,3 +82,9 @@ pub const CPU = struct {
         self.set_flags(accs[0 .. n + 1], instruction);
     }
 };
+
+pub fn main() !void {
+    // this is just for the build to run...
+    // unused by now
+    std.debug.print("Hello, World!\n", .{});
+}

@@ -66,7 +66,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         1,
-        0x1,
+        0x01,
         &[_]MCFuncPtr{ mc.INC_RR, mc.LD_IM, mc.LD_IM },
         &[_]t.DataType{ r.PC, r.B, r.C },
         fs.FS_NOP,
@@ -78,7 +78,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         2,
-        0x2,
+        0x02,
         &[_]MCFuncPtr{ mc.LD_R, mc.MV_MM },
         &[_]t.DataType{ r.A, r.BC },
         fs.FS_NOP,
@@ -90,7 +90,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         3,
-        0x3,
+        0x03,
         &[_]MCFuncPtr{mc.INC_RR},
         &[_]t.DataType{r.BC},
         fs.FS_NOP,
@@ -102,7 +102,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         4,
-        0x4,
+        0x04,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
@@ -114,7 +114,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         5,
-        0x5,
+        0x05,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
@@ -126,7 +126,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         6,
-        0x6,
+        0x06,
         &[_]MCFuncPtr{ mc.INC_RR, mc.LD_IM },
         &[_]t.DataType{ r.PC, r.B },
         fs.FS_NOP,
@@ -138,7 +138,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         7,
-        0x7,
+        0x07,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
@@ -150,7 +150,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         8,
-        0x8,
+        0x08,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
@@ -1278,15 +1278,15 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         102,
-        103,
-        &[_]MCFuncPtr{},
-        &[_]t.DataType{},
+        0x66,
+        &[_]MCFuncPtr{ mc.LD_MM, mc.MV_R },
+        &[_]t.DataType{ r.HL, r.H },
         fs.FS_NOP,
         fs.FS_NOP,
         fs.FS_NOP,
         fs.FS_NOP,
-        "",
-        "",
+        "LD H, (HL)",
+        "Load the 8-bit contents of memory specified by register pair HL into register H.",
     ),
     instruction_t.init(
         103,
@@ -1434,7 +1434,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         115,
-        116,
+        0x73,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
@@ -2502,7 +2502,7 @@ pub const instructions = [_]instruction_t{
     ),
     instruction_t.init(
         204,
-        205,
+        0xcc,
         &[_]MCFuncPtr{},
         &[_]t.DataType{},
         fs.FS_NOP,
