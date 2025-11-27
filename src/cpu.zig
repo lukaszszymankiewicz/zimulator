@@ -1,13 +1,14 @@
 const std = @import("std");
-// TODO: this is no used by now
-const raylib = @cImport(@embedFile("raylib.h"));
 
 const hw = @import("hardware.zig");
 const r = @import("reg.zig");
 const t = @import("types.zig");
-
 const instruction_t = @import("ins.zig").instruction_t;
 const instruction_collection = @import("ins.zig").instructions;
+
+const rl = @cImport({
+    @cInclude("raylib.h");
+});
 
 pub const CPU = struct {
     REG: [hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE]t.DataType,
@@ -84,7 +85,19 @@ pub const CPU = struct {
 };
 
 pub fn main() !void {
-    // this is just for the build to run...
-    // unused by now
     std.debug.print("Hello, World!\n", .{});
+
+    const screenWidth = 800;
+    const screenHeight = 450;
+
+    rl.InitWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
+    defer rl.CloseWindow();
+    rl.SetTargetFPS(60); // Set our game to run at 60 frames-per-second
+
+    while (!rl.WindowShouldClose()) { // Detect window close button or ESC key
+        rl.BeginDrawing();
+        defer rl.EndDrawing();
+        rl.ClearBackground(rl.WHITE);
+        rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LIGHTGRAY);
+    }
 }
