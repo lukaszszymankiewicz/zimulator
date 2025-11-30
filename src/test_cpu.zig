@@ -35,7 +35,7 @@ const CASE = struct {
     PCL: RegVals = .{ 0, 0 },
     PCH: RegVals = .{ 0, 0 },
     MEM: RegVals = .{ 0, 0 },
-    EXP_MEM: RegVals = .{ 0, 0 },
+    EXP_MEM: RegVals = .{ 300, 0 },
     IMM: RegVals = .{ 0, 0 },
 };
 
@@ -310,9 +310,7 @@ test "test instructions modifies the state of CPU properly" {
         .{ .OP = 179, .A = .{ 0b0000_0000, 0b1010_1010 }, .E = .{ 0b1010_1010, 0b1010_1010 }, .PCL = .{0, 1} },
         .{ .OP = 180, .A = .{ 0b0000_0000, 0b1010_1010 }, .H = .{ 0b1010_1010, 0b1010_1010 }, .PCL = .{0, 1} },
         .{ .OP = 181, .A = .{ 0b0000_0000, 0b1010_1010 }, .L = .{ 0b1010_1010, 0b1010_1010 }, .PCL = .{0, 1} },
-
         .{ .OP = 183, .A = .{ 0b1010_1010, 0b1010_1010 }, .PCL = .{0, 1} },
-
         .{ .OP = 194, .IMM = .{ 4, 2 }, .ZF = .{ 0, 0 }, .PCL = .{ 13, 4 }, .PCH = .{ 13, 2 } },
         .{ .OP = 194, .IMM = .{ 42, 69 }, .ZF = .{ 0, 0 }, .PCL = .{ 13, 42 }, .PCH = .{ 13, 69 } },
         .{ .OP = 194, .IMM = .{ 42, 69 }, .ZF = .{ 1, 1 }, .PCL = .{ 255, 2 }, .PCH = .{ 13, 14 } },
@@ -339,7 +337,7 @@ test "test instructions modifies the state of CPU properly" {
         .{ .OP = 234, .A = .{ 10, 10 }, .IMM = .{ 1, 1 }, .EXP_MEM = .{ 257, 10 }, .PCL = .{ 0, 3 } },
         .{ .OP = 234, .A = .{ 25, 25 }, .IMM = .{ 33, 33 }, .EXP_MEM = .{ 8481, 25 }, .PCL = .{ 0, 3 } },
         .{ .OP = 250, .A = .{ 0, 25 }, .IMM = .{ 0, 1 }, .MEM = .{ 256, 25 }, .PCL = .{ 0, 3 } },
-        .{ .OP = 250, .A = .{ 0, 25 }, .IMM = .{ 1, 0 }, .MEM = .{ 1, 25 }, .PCL = .{ 0, 3 } },
+        .{ .OP = 250, .A = .{ 0, 25 }, .IMM = .{ 15, 0 }, .MEM = .{ 15, 25 }, .PCL = .{ 0, 3 } },
         .{ .OP = 250, .A = .{ 0, 69 }, .IMM = .{ 1, 1 }, .MEM = .{ 257, 69 }, .PCL = .{ 0, 3 } },
         .{ .OP = 254, .A = .{ 69, 69 }, .IMM = .{ 1, 0 }, .NF = .{ 0, 1 }, .ZF = .{ 0, 0 }, .PCL = .{ 0, 2 } },
         .{ .OP = 254, .A = .{ 69, 69 }, .IMM = .{ 200, 0 }, .NF = .{ 0, 1 }, .ZF = .{ 0, 0 }, .PCL = .{ 0, 2 } },
@@ -389,6 +387,8 @@ test "test instructions modifies the state of CPU properly" {
         try std.testing.expect(c.REG[@intCast(r.P)] == case.P[EXP]);
         try std.testing.expect(c.REG[@intCast(r.PCL)] == case.PCL[EXP]);
         try std.testing.expect(c.REG[@intCast(r.PCH)] == case.PCH[EXP]);
+        std.debug.print("calc: {d} \n", .{c.REG[@intCast(case.EXP_MEM[0] + hw.SREG_SIZE)]});
+        std.debug.print("exp: {d} \n", .{case.EXP_MEM[1]});
         try std.testing.expect(c.REG[@intCast(case.EXP_MEM[0] + hw.SREG_SIZE)] == case.EXP_MEM[1]);
 
         std.debug.print("PASSED\n", .{});

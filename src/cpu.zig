@@ -11,11 +11,11 @@ const rl = @cImport({
 });
 
 pub const CPU = struct {
-    REG: [hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE]t.DataType,
+    REG: [hw.SREG_SIZE + hw.RAM_SIZE]t.DataType,
 
     pub fn init() CPU {
         var cpu = CPU{
-            .REG = [_]t.DataType{0} ** (hw.SREG_SIZE + hw.RAM_SIZE + hw.PROG_SIZE),
+            .REG = [_]t.DataType{0} ** (hw.SREG_SIZE + hw.RAM_SIZE),
         };
         // set special fixed registers
         cpu.REG[r.ONS] = 1;

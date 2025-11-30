@@ -2,8 +2,6 @@ const std = @import("std");
 
 const t = @import("types.zig");
 
-// TODO: program is in RAM!
 pub const SREG_SIZE: t.HardwareSize = 256;
 pub const RAM_SIZE: t.HardwareSize = 256 * 256;
-pub const PROG_SIZE: t.HardwareSize = 256 * 256;
-pub const PROG_START: t.HardwareSize = SREG_SIZE + RAM_SIZE;
+pub const PROG_START: t.HardwareSize = SREG_SIZE;
