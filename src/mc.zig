@@ -41,6 +41,7 @@ pub fn DEC_RR(state: []t.DataType, reg: t.IndexType) void {
     state[reg + 1] -%= 1;
 }
 
+// TODO: INC_RR should be in ins not here
 pub fn LD_IM(state: []t.DataType, reg: t.IndexType) void {
     const rr = _rr(state, r.PC);
     INC_RR(state, r.PC);
