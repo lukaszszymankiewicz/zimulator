@@ -44,14 +44,11 @@ pub fn DEC_RR(state: []t.DataType, reg: t.IndexType) void {
 // TODO: INC_RR should be in ins not here
 pub fn LD_IM(state: []t.DataType, reg: t.IndexType) void {
     const rr = _rr(state, r.PC);
-    INC_RR(state, r.PC);
-
     state[reg] = state[hw.SREG_SIZE + rr];
 }
 
 pub fn LD_R_MM(state: []t.DataType, reg: t.IndexType) void {
     const rr = _rr(state, r.TM);
-    std.debug.print("\ninside LD_R_MM TM: {d} \n", .{rr+256});
     state[reg] = state[hw.SREG_SIZE + rr];
 }
 
@@ -60,17 +57,18 @@ pub fn LD_MM(state: []t.DataType, reg: t.IndexType) void {
     state[r.TM] = state[hw.SREG_SIZE + rr];
 }
 
+pub fn MV_MM(state: []t.DataType, reg: t.IndexType) void {
+    const rr = _rr(state, reg);
+    state[hw.SREG_SIZE + rr] = state[r.A];
+}
+
+
 pub fn MV_R(state: []t.DataType, reg: t.IndexType) void {
     state[reg] = state[r.TM];
 }
 
 pub fn LD_R(state: []t.DataType, reg: t.IndexType) void {
     state[r.TM] = state[reg];
-}
-
-pub fn MV_MM(state: []t.DataType, reg: t.IndexType) void {
-    const rr = _rr(state, reg);
-    state[hw.SREG_SIZE + rr] = state[r.A];
 }
 
 pub fn JP_F(state: []t.DataType, reg: t.IndexType) void {
