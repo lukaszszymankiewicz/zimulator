@@ -6,10 +6,6 @@ const t = @import("types.zig");
 const instruction_t = @import("ins.zig").instruction_t;
 const instruction_collection = @import("ins.zig").instructions;
 
-const rl = @cImport({
-    @cInclude("raylib.h");
-});
-
 pub const CPU = struct {
     REG: [hw.SREG_SIZE + hw.RAM_SIZE]t.DataType,
 
@@ -40,64 +36,38 @@ pub const CPU = struct {
     }
 
     // TODO: to the flag setter module
-    pub fn set_flags(self: *CPU, buf: []i32, instruction: instruction_t) void {
-        self.REG[r.CF] = instruction.CXFS(buf, self.REG[r.CF]);
-        self.REG[r.HF] = instruction.HXFS(buf, self.REG[r.HF]);
-        self.REG[r.NF] = instruction.NXFS(buf, self.REG[r.HF]);
-        self.REG[r.ZF] = instruction.ZXFS(buf, self.REG[r.ZF]);
+    pub fn set_flags(self: *CPU, accs: []i32, instruction: instruction_t) void {
+        self.REG[r.CF] = instruction.CXFS(accs[0..instruction.NMCS+1], self.REG[r.CF]);
+        self.REG[r.HF] = instruction.HXFS(accs[0..instruction.NMCS+1], self.REG[r.HF]);
+        self.REG[r.NF] = instruction.NXFS(accs[0..instruction.NMCS+1], self.REG[r.HF]);
+        self.REG[r.ZF] = instruction.ZXFS(accs[0..instruction.NMCS+1], self.REG[r.ZF]);
+    }
+
+    pub fn get_vram(self: *CPU) []t.DataType {
+        // TODO: create fix values for this range
+        return self.REG[(hw.PROG_START + 0x9000)..(hw.PROG_START + 0x9FFF)];
     }
 
     // TODO: to the register module
-    pub fn get_rr(self: *CPU, reg: t.DataType) t.HardwareSize {
-        const h: u32 = @intCast(self.REG[reg]);
-        const l: u32 = @intCast(self.REG[reg + 1]);
-        return (h << 8) + l;
+    pub fn get_instruction(self: *CPU) instruction_t {
+        const h: u32 = @intCast(self.REG[r.PCH]);
+        const l: u32 = @intCast(self.REG[r.PCL]);
+
+        const ins_idx: u32 =  self.REG[hw.PROG_START + (h << 8) + l];
+
+        return instruction_collection[ins_idx];
     }
 
-    pub fn read_program(self: *CPU, program: []t.DataType) void {
-        const pc: t.HardwareSize = self.get_rr(r.PC);
+    pub fn run_single_instruction(self: *CPU) void {
+        const instruction = self.get_instruction();
 
-        for (0..program.len) |i| {
-            self.REG[hw.PROG_START + pc + i] = program[i];
-        }
-    }
-
-    pub fn run_ins(self: *CPU, program: []t.DataType) void {
-        self.read_program(program);
-        const pc: t.HardwareSize = self.get_rr(r.PC);
-
-        // read instruction from PC
-        const idx = self.REG[hw.PROG_START + pc];
-        const instruction: instruction_t = instruction_collection[idx];
-        const n = instruction.NMCS;
-
-        // some while loop? or is it too soon?
-        // TODO: make it dynamic
         var accs = self.get_acc_buffer();
 
-        for (0..n) |i| {
+        for (0..instruction.NMCS) |i| {
             self.run_microcode(instruction, i);
             self.fill_acc_buffer(&accs, i);
         }
 
-        self.set_flags(accs[0 .. n + 1], instruction);
+        self.set_flags(&accs, instruction);
     }
 };
-
-pub fn main() !void {
-    std.debug.print("Hello, World!\n", .{});
-
-    const screenWidth = 800;
-    const screenHeight = 450;
-
-    rl.InitWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
-    defer rl.CloseWindow();
-    rl.SetTargetFPS(60); // Set our game to run at 60 frames-per-second
-
-    while (!rl.WindowShouldClose()) { // Detect window close button or ESC key
-        rl.BeginDrawing();
-        defer rl.EndDrawing();
-        rl.ClearBackground(rl.WHITE);
-        rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LIGHTGRAY);
-    }
-}

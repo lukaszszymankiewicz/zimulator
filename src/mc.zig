@@ -41,7 +41,6 @@ pub fn DEC_RR(state: []t.DataType, reg: t.IndexType) void {
     state[reg + 1] -%= 1;
 }
 
-// TODO: INC_RR should be in ins not here
 pub fn LD_IM(state: []t.DataType, reg: t.IndexType) void {
     const rr = _rr(state, r.PC);
     state[reg] = state[hw.SREG_SIZE + rr];
@@ -52,9 +51,8 @@ pub fn LD_R_MM(state: []t.DataType, reg: t.IndexType) void {
     state[reg] = state[hw.SREG_SIZE + rr];
 }
 
-pub fn LD_MM(state: []t.DataType, reg: t.IndexType) void {
-    const rr = _rr(state, reg);
-    state[r.TM] = state[hw.SREG_SIZE + rr];
+pub fn LD_R(state: []t.DataType, reg: t.IndexType) void {
+    state[reg] = state[r.TM];
 }
 
 pub fn MV_MM(state: []t.DataType, reg: t.IndexType) void {
@@ -62,12 +60,12 @@ pub fn MV_MM(state: []t.DataType, reg: t.IndexType) void {
     state[hw.SREG_SIZE + rr] = state[r.A];
 }
 
-
-pub fn MV_R(state: []t.DataType, reg: t.IndexType) void {
-    state[reg] = state[r.TM];
+pub fn STORE_MM(state: []t.DataType, reg: t.IndexType) void {
+    const rr = _rr(state, reg);
+    state[r.TM] = state[hw.SREG_SIZE + rr];
 }
 
-pub fn LD_R(state: []t.DataType, reg: t.IndexType) void {
+pub fn STORE_R(state: []t.DataType, reg: t.IndexType) void {
     state[r.TM] = state[reg];
 }
 
