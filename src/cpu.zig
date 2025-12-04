@@ -48,6 +48,11 @@ pub const CPU = struct {
         return self.REG[(hw.PROG_START + 0x9000)..(hw.PROG_START + 0x9FFF)];
     }
 
+    pub fn get_tilemap(self: *CPU) []t.DataType {
+        // TODO: create fix values for this range
+        return self.REG[(hw.PROG_START + 0x9800)..(hw.PROG_START + 0x9800 + 0x240)];
+    }
+
     // TODO: to the register module
     pub fn get_instruction(self: *CPU) instruction_t {
         const h: u32 = @intCast(self.REG[r.PCH]);

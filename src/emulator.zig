@@ -18,6 +18,12 @@ const APP_NAME: []const u8 = "ZIMULATOR";
 
 const SCREEN_WIDTH = 600;
 const SCREEN_HEIGHT = 600;
+const GB_SCREEN_WIDTH = 160;
+const GB_SCREEN_HEIGHT = 144;
+const TILE_WIDTH: u32 = 8;
+const TILE_HEIGHT: u32 = 8;
+const TILE_IN_ROW: u32 = 32;
+const TILE_IN_COL: u32 = 18;
 const FPS = 60;
 
 pub const Emulator = struct {
@@ -50,25 +56,47 @@ pub const Emulator = struct {
     }
 
     pub fn run(self: *Emulator) !void {
+        // this is just a PoC. Emulator runs one frame and renders the screen (rather than running in full loop)
         self.run_cpu_cycle();
 
-        rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, APP_NAME);
+        rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "ZIMULATOR");
         rl.SetTargetFPS(FPS);
 
-        const tilemap: rl.Image = try tm.create_tilemap(self.processor.get_vram());
+        const vram: rl.Image = try tm.create_tilemap(self.processor.get_vram());
         std.time.sleep(2_000_000);
-        const screenTexture: rl.Texture2D = rl.LoadTextureFromImage(tilemap);
+        const tiletex: rl.Texture2D = rl.LoadTextureFromImage(vram);
         defer rl.CloseWindow();
+        const tilemap = self.processor.get_tilemap();
 
         while (!rl.WindowShouldClose()) {
             rl.BeginDrawing();
             defer rl.EndDrawing();
             rl.ClearBackground(rl.WHITE);
-            rl.DrawTextureEx(screenTexture, rl.Vector2{.x=44, .y=44}, 0, 4.0, rl.RAYWHITE);
+
+            for (tilemap, 0..) |tile, i| {
+
+                const row = i / TILE_IN_ROW;
+                const col = i % TILE_IN_ROW;
+
+                const src: rl.Rectangle = rl.Rectangle{
+                    .x=@floatFromInt(tile * TILE_WIDTH),
+                    .y=0.0,
+                    .width=@floatFromInt(TILE_WIDTH),
+                    .height=@floatFromInt(TILE_HEIGHT)
+                };
+
+                const dest: rl.Vector2 = rl.Vector2{
+                    .x=@floatFromInt(col * TILE_WIDTH),
+                    .y=@floatFromInt(row * TILE_HEIGHT),
+                };
+                rl.DrawTextureRec(tiletex, src, dest, rl.RAYWHITE);
+
+
+            }
         }
 
-       defer rl.UnloadTexture(screenTexture);
-       defer rl.UnloadImage(tilemap);
+       defer rl.UnloadTexture(tiletex);
+       defer rl.UnloadImage(vram);
     }
 
     pub fn run_cpu_cycle(self: *Emulator) void {
@@ -91,21 +119,3 @@ pub fn main() !void {
     try e.read_rom();
     try e.run();
 }
-
-// pub fn main() !void {
-//     std.debug.print("Hello, World!\n", .{});
-//
-//     const screenWidth = 800;
-//     const screenHeight = 450;
-//
-//     rl.InitWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
-//     defer rl.CloseWindow();
-//     rl.SetTargetFPS(60); // Set our game to run at 60 frames-per-second
-//
-//     while (!rl.WindowShouldClose()) { // Detect window close button or ESC key
-//         rl.BeginDrawing();
-//         defer rl.EndDrawing();
-//         rl.ClearBackground(rl.WHITE);
-//         rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LIGHTGRAY);
-//     }
-// }
