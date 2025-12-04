@@ -17,7 +17,7 @@ const ROM_FILE: []const u8 = "src/hello";
 const APP_NAME: []const u8 = "ZIMULATOR";
 
 const SCREEN_WIDTH = 600;
-const SCREEN_HEIGHT = 600;
+const SCREEN_HEIGHT = 576;
 const GB_SCREEN_WIDTH = 160;
 const GB_SCREEN_HEIGHT = 144;
 const TILE_WIDTH: u32 = 8;
@@ -25,6 +25,7 @@ const TILE_HEIGHT: u32 = 8;
 const TILE_IN_ROW: u32 = 32;
 const TILE_IN_COL: u32 = 18;
 const FPS = 60;
+const SCALE = 4; // just for presentation purposes
 
 pub const Emulator = struct {
     processor: cpu.CPU,
@@ -55,6 +56,32 @@ pub const Emulator = struct {
         }
     }
 
+    pub fn draw_tiles(_: *Emulator, tilemap: []t.DataType, tex: rl.Texture2D) void {
+        for (tilemap, 0..) |tile, i| {
+
+            const row = i / TILE_IN_ROW;
+            const col = i % TILE_IN_ROW;
+
+            const src: rl.Rectangle = rl.Rectangle{
+                .x=@floatFromInt(tile * TILE_WIDTH),
+                .y=0.0,
+                .width=@floatFromInt(TILE_WIDTH),
+                .height=@floatFromInt(TILE_HEIGHT)
+            };
+
+            const dest: rl.Rectangle = rl.Rectangle{
+                .x=@floatFromInt(col * TILE_WIDTH * SCALE),
+                .y=@floatFromInt(row * TILE_HEIGHT * SCALE),
+                .width=@floatFromInt(TILE_WIDTH * SCALE),
+                .height=@floatFromInt(TILE_HEIGHT * SCALE)
+            };
+
+            const origin: rl.Vector2 = rl.Vector2{ .x=0.0, .y=0.0 };
+
+            rl.DrawTexturePro(tex, src, dest, origin, 0.0, rl.RAYWHITE);
+        }
+    }
+
     pub fn run(self: *Emulator) !void {
         // this is just a PoC. Emulator runs one frame and renders the screen (rather than running in full loop)
         self.run_cpu_cycle();
@@ -63,7 +90,6 @@ pub const Emulator = struct {
         rl.SetTargetFPS(FPS);
 
         const vram: rl.Image = try tm.create_tilemap(self.processor.get_vram());
-        std.time.sleep(2_000_000);
         const tiletex: rl.Texture2D = rl.LoadTextureFromImage(vram);
         defer rl.CloseWindow();
         const tilemap = self.processor.get_tilemap();
@@ -72,27 +98,7 @@ pub const Emulator = struct {
             rl.BeginDrawing();
             defer rl.EndDrawing();
             rl.ClearBackground(rl.WHITE);
-
-            for (tilemap, 0..) |tile, i| {
-
-                const row = i / TILE_IN_ROW;
-                const col = i % TILE_IN_ROW;
-
-                const src: rl.Rectangle = rl.Rectangle{
-                    .x=@floatFromInt(tile * TILE_WIDTH),
-                    .y=0.0,
-                    .width=@floatFromInt(TILE_WIDTH),
-                    .height=@floatFromInt(TILE_HEIGHT)
-                };
-
-                const dest: rl.Vector2 = rl.Vector2{
-                    .x=@floatFromInt(col * TILE_WIDTH),
-                    .y=@floatFromInt(row * TILE_HEIGHT),
-                };
-                rl.DrawTextureRec(tiletex, src, dest, rl.RAYWHITE);
-
-
-            }
+            self.draw_tiles(tilemap, tiletex);
         }
 
        defer rl.UnloadTexture(tiletex);
@@ -100,7 +106,6 @@ pub const Emulator = struct {
     }
 
     pub fn run_cpu_cycle(self: *Emulator) void {
-        // run one cycle and quietly exit
         var idx: u16 = 0;
 
         while (true) {

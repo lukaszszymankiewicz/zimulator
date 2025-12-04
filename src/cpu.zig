@@ -18,7 +18,6 @@ pub const CPU = struct {
         return cpu;
     }
 
-    // TODO: to the microcode module
     pub fn run_microcode(self: *CPU, instruction: instruction_t, n: usize) void {
         const fun = instruction.MCS[n];
         const arg = instruction.ARGS[n];
@@ -53,7 +52,6 @@ pub const CPU = struct {
         return self.REG[(hw.PROG_START + 0x9800)..(hw.PROG_START + 0x9800 + 0x240)];
     }
 
-    // TODO: to the register module
     pub fn get_instruction(self: *CPU) instruction_t {
         const h: u32 = @intCast(self.REG[r.PCH]);
         const l: u32 = @intCast(self.REG[r.PCL]);
