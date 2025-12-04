@@ -70,11 +70,11 @@ pub fn STORE_R(state: []t.DataType, reg: t.IndexType) void {
 }
 
 pub fn JP_F(state: []t.DataType, reg: t.IndexType) void {
-    state[r.PCH] = (state[r.TMH] * state[reg]) + (state[r.PCH] * ((~state[reg]) & 0b0000_0001));
-    state[r.PCL] = (state[r.TML] * state[reg]) + (state[r.PCL] * ((~state[reg]) & 0b0000_0001));
+    state[r.PCH] = (state[r.TMH] * state[reg]) + (state[r.PCH] * ((~state[reg]) & 1));
+    state[r.PCL] = (state[r.TML] * state[reg]) + (state[r.PCL] * ((~state[reg]) & 1));
 }
 
 pub fn JP_NF(state: []t.DataType, reg: t.IndexType) void {
-    state[r.PCH] = (state[r.PCH] * state[reg]) + (state[r.TMH] * ((~state[reg]) & 0b0000_0001));
-    state[r.PCL] = (state[r.PCL] * state[reg]) + (state[r.TML] * ((~state[reg]) & 0b0000_0001));
+    state[r.PCH] = (state[r.PCH] * state[reg]) + (state[r.TMH] * ((~state[reg]) & 1));
+    state[r.PCL] = (state[r.PCL] * state[reg]) + (state[r.TML] * ((~state[reg]) & 1));
 }
